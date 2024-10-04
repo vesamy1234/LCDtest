@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
 #include "stdlib.h"
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +63,7 @@ static void MX_GPIO_Init(void);
 #define chia 14
 #define bang 15
 #define ko 16
-uint64_t num[10] = {0,0,0,0,0,0,0,0,0,0}; //luu so
+int64_t num[10] = {0,0,0,0,0,0,0,0,0,0}; //luu so
 uint8_t equaltion[9] = {0,0,0,0,0,0,0,0,0}; // luu dau
 uint8_t pos = 0; //vi tri
 
@@ -81,8 +82,8 @@ uint8_t key_current=0;
 uint8_t key_last=0;
 
 
-uint64_t kq=0;
-uint32_t num1=0;
+int64_t kq=0;
+int64_t num1=0;
 
 void selectRow(uint8_t row)
 {
@@ -155,6 +156,59 @@ uint8_t Keypad_Getkey()
 	return 0;
 }
 
+// A utility function to reverse a string
+void reverse(char str[], int length)
+{
+    int start = 0;
+    int end = length - 1;
+    while (start < end) {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        end--;
+        start++;
+    }
+}
+// Implementation of citoa()
+char* citoa(int64_t num, char* str, int base)
+{
+    int i = 0;
+    bool isNegative = false;
+
+    /* Handle 0 explicitly, otherwise empty string is
+     * printed for 0 */
+    if (num == 0) {
+        str[i++] = '0';
+        str[i] = '\0';
+        return str;
+    }
+
+    // In standard itoa(), negative numbers are handled
+    // only with base 10. Otherwise numbers are
+    // considered unsigned.
+    if (num < 0 && base == 10) {
+        isNegative = true;
+        num = -num;
+    }
+
+    // Process individual digits
+    while (num != 0) {
+        int rem = num % base;
+        str[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+        num = num / base;
+    }
+
+    // If number is negative, append '-'
+    if (isNegative)
+        str[i++] = '-';
+
+    str[i] = '\0'; // Append string terminator
+
+    // Reverse the string
+    reverse(str, i);
+
+    return str;
+}
 
 /* USER CODE END 0 */
 
@@ -266,7 +320,10 @@ int main(void)
 
     		}
     		Lcd_cursor(&lcd, 1, 0);
+//    		char snum[16];
+//    		citoa(kq, snum, 10);
     		Lcd_int(&lcd, kq);
+//    		Lcd_string(&lcd, snum);
     	}
     	if (key==DEL)
     	{
@@ -305,7 +362,6 @@ int main(void)
     		      num[i] = 0;
     		  }
     	  }
-
     }
     void Keypad_handle()
     {
